@@ -204,7 +204,28 @@ void another_test() {
     freeVM(vm);
 }
 
+void performance() {
+    printf("Performance of GC.\n");
+    VM* vm = newVM();
+
+    for(int i = 0; i < 1000; i++) {
+        for(int j = 0; j < 20; j++) {
+            pushInt(vm, i);
+        }
+
+        for(int k = 0; k < 20; k++) {
+            pop(vm);
+        }
+    }
+    freeVM(vm);
+}
+
 int main(int artc, const char** argv) {
+    first_test();
+    second_test();
+    third_test();
+    another_test();
+    performance();
     
     return 0;
 }
