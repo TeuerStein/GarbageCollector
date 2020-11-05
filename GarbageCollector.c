@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #define STACK_MAX_SIZE 256
+#define IGCT 8
 
 typedef enum {
     INT,
@@ -26,10 +27,11 @@ typedef struct sObject {
 
 typedef struct {
     Object* stack[STACK_MAX_SIZE];
-    
     int stackSize;
     
     Object* firstObject;
+    
+    int numObjects;
 }vm;
 
 void push(vm* vm, Object* value) {
@@ -44,14 +46,18 @@ vm* newVm() {
     vm* mainVm = (vm*)malloc(sizeof(vm));
     mainVm->stackSize = 0;
     mainVm->firstObject = NULL;
+    mainVm->numObjects = 0;
+    mainVm->maxObjects = IGCT;
     
     return mainVm;
 }
 
 Object* newObject(vm* vm, oType type) {
+    if(vm->numObjects == vm->maxObjects) gc(vm);
     Object* object = (Object*) malloc(sizeof(Object))
     object->type = type;
     
+    vm->maxObjects++;
     return object;
 }
 
@@ -94,10 +100,38 @@ void marksweep(vm* vm) {
             Object* unreached = *object;
             *object = unreached->next;
             free(unreached)
+            
+            vm->numObjects--;
         } else {
             (*object)->marked = 0;
             object = &(*object)->next;
         }
+    }
+}
+
+void gc(vm* vm) {
+    int numObjects = vm->numObjects;
+    
+    markAll(vm);
+    marksweep(vm);
+    
+    vm->maxObjects = vm->numObjects * 2;
+    
+    printf("Was deleted %d objects, %d objects left", numObjects - vm->numObjects, vm->numObjects);
+}
+void printObj(Object* object) {
+    switch(object->type) {
+        case INT:
+            printf("%d", object->value);
+            break;
+        
+        case TWIN:
+            printf("(");
+            printObj(object->head);
+            printf(", ");
+            printObj(object->tail);
+            printf(")");
+            break;
     }
 }
 
