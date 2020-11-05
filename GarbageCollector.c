@@ -10,6 +10,9 @@ typedef enum {
 
 typedef struct sObject {
     oType type;
+    unsigned char marked;
+    
+    struct sObject* next;
     
     union {
         int value;
@@ -25,6 +28,8 @@ typedef struct {
     Object* stack[STACK_MAX_SIZE];
     
     int stackSize;
+    
+    Object* firstObject;
 }vm;
 
 void push(vm* vm, Object* value) {
@@ -38,6 +43,7 @@ Object* pop(vm* vm) {
 vm* newVm() {
     vm* mainVm = (vm*)malloc(sizeof(vm));
     mainVm->stackSize = 0;
+    mainVm->firstObject = NULL;
     
     return mainVm;
 }
@@ -77,6 +83,21 @@ void mark(Object* object) {
     if(object->type == TWIN) {
         mark(object->head);
         mark(object->tail);
+    }
+}
+
+void marksweep(vm* vm) {
+    Object** object = &vm->firstObject;
+    
+    while(*object) {
+        if (!(*object)->marked) {
+            Object* unreached = *object;
+            *object = unreached->next;
+            free(unreached)
+        } else {
+            (*object)->marked = 0;
+            object = &(*object)->next;
+        }
     }
 }
 
