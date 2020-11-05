@@ -47,6 +47,20 @@ Object* newObject(vm* vm, oType type) {
     return object;
 }
 
+void pushInt(vm* vm, int intV) {
+    Object* object = newObject(vm, INT);
+    object->value = intV;
+}
+
+Object* pushTwin(vm* vm) {
+    Object* object = newObject(vm, TWIN);
+    object->tail = pop(vm);
+    object->head = pop(vm);
+    
+    push(vm, object);
+    return object;
+}
+
 int main(int artc, const char** argv) {
     
     return 0;
