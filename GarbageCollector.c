@@ -38,12 +38,14 @@ Object* pop(vm* vm) {
 vm* newVm() {
     vm* mainVm = (vm*)malloc(sizeof(vm));
     mainVm->stackSize = 0;
+    
     return mainVm;
 }
 
 Object* newObject(vm* vm, oType type) {
     Object* object = (Object*) malloc(sizeof(Object))
     object->type = type;
+    
     return object;
 }
 
@@ -59,6 +61,23 @@ Object* pushTwin(vm* vm) {
     
     push(vm, object);
     return object;
+}
+
+void markAll(vm* vm) {
+    for(int i = 0; i < vm->stack; i++) {
+        mark(vm->stack[i]);
+    }
+}
+
+void mark(Object* object) {
+    if(object->marked) return;
+    
+    object->marked = 1;
+    
+    if(object->type == TWIN) {
+        mark(object->head);
+        mark(object->tail);
+    }
 }
 
 int main(int artc, const char** argv) {
